@@ -38,7 +38,7 @@ button.primary:hover { background: #9a4500; }
 
 .legend { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 6px; }
 .sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
-.sw.shade { background: #28364f; }
+.sw.shade { background: #161b24; }
 .sw.bldg  { background: #f0ece4; }
 .legend .sw:not(:first-child) { margin-left: 10px; }
 

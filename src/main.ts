@@ -87,7 +87,7 @@ function render(): void {
       data: shadeFC(hour),
       filled: true,
       stroked: false,
-      getFillColor: [40, 54, 79, 150],
+      getFillColor: [22, 27, 36, 185],
       beforeId: SHADE_BEFORE,
     } as GeoJsonLayerProps<ShadeProps> & { beforeId: string },
   )
