@@ -87,7 +87,8 @@ const hourFilter = (hour: number): FilterSpecification => ['==', ['get', 'hour']
 const buildingPM = new PMTiles(BUILDING_PMTILES)
 let overlay: MapboxOverlay | null = null
 
-const WIRE_COLOR: [number, number, number, number] = [70, 60, 52, 220]
+// 建物枠線の色。第4要素はアルファ(0-255)。完全不透明にするなら 255
+const WIRE_COLOR: [number, number, number, number] = [0, 0, 0, 220]
 // 屋上輪郭線の太さ(px)。ここを変えると線の太さが変わる。
 // SolidPolygonLayer の wireframe は topology:'line-strip'（GPU ライン）で
 // 幅を指定できず 1px 固定なので、太い線は下の PathLayer(GeoJsonLayer の stroke)が担う。

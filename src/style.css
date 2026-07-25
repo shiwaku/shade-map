@@ -62,7 +62,7 @@ button.primary:hover { background: #9a4500; }
 .sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
 .sw.shade { background: #0e1219; opacity: 0.52; }
 /* 建物は壁面透明＋枠線のみ（deck.gl ワイヤーフレーム） */
-.sw.bldg  { background: transparent; border: 1.5px solid #463c34; }
+.sw.bldg  { background: transparent; border: 1.5px solid rgba(0,0,0,0.86); }
 .legend .sw:not(:first-child) { margin-left: 10px; }
 
 .foot { font-size: 11px; color: #8a8a8a; margin-top: 10px; line-height: 1.5; }
