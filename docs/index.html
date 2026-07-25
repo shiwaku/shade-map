@@ -4,16 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>さいたま市 日陰マップ（大宮駅周辺）</title>
-  <script type="module" crossorigin src="./assets/index-DRnBo5Nz.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CjyXBwSB.css">
+  <script type="module" crossorigin src="./assets/index-Q7L-21u_.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CKTFL0P1.css">
 </head>
 <body>
   <div id="loading"><div class="spinner"></div><p>地図を読み込んでいます…</p></div>
   <div id="map"></div>
 
   <div id="panel">
+    <button id="panel-close" aria-label="閉じる" title="閉じる">✕</button>
     <h1>☀️ 日陰マップ</h1>
-    <div class="sub">大宮駅周辺／基準日 <span id="thedate">—</span></div>
+    <div class="sub">さいたま市全域／基準日 <span id="thedate">—</span></div>
 
     <div class="row">
       <label for="time">時刻：<span id="timeval">12:00</span></label>
@@ -38,6 +39,8 @@
       日陰＝建物フットプリント×高さ TAKASA の幾何投影を1時間帯ごとに事前計算・結合。平地想定・地形/樹木/庇は未考慮。
     </div>
   </div>
+
+  <button id="panel-open" aria-label="パネルを開く" title="パネルを開く">☀️ 日陰マップ</button>
 
 </body>
 </html>

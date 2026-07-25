@@ -10,12 +10,34 @@ body {
   position: absolute; top: 14px; left: 14px; z-index: 20;
   background: rgba(255,255,252,0.94);
   border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 10px; padding: 14px 16px; width: 310px;
+  border-radius: 0; padding: 14px 16px; width: 310px;
   backdrop-filter: blur(8px);
   box-shadow: 0 2px 12px rgba(0,0,0,0.14);
   font-size: 13px;
 }
-#panel h1 { font-size: 15px; margin-bottom: 2px; }
+#panel.hidden { display: none; }
+#panel h1 { font-size: 15px; margin-bottom: 2px; padding-right: 22px; }
+
+/* 閉じるボタン */
+#panel-close {
+  position: absolute; top: 8px; right: 10px;
+  background: none; border: none; padding: 2px 4px;
+  font-size: 15px; line-height: 1; color: #999; cursor: pointer;
+}
+#panel-close:hover { color: #333; background: none; }
+
+/* パネルを開くボタン（閉じているときのみ表示） */
+#panel-open {
+  display: none;
+  position: absolute; top: 14px; left: 14px; z-index: 20;
+  background: rgba(255,255,252,0.94);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 0; padding: 8px 12px;
+  font-size: 13px; font-weight: 600; color: #333; cursor: pointer;
+  backdrop-filter: blur(8px); box-shadow: 0 2px 12px rgba(0,0,0,0.14);
+}
+#panel-open:hover { background: rgba(240,240,235,0.97); }
+#panel-open.show { display: block; }
 #panel .sub { font-size: 12px; color: #666; margin-bottom: 10px; }
 #panel .row { margin: 10px 0; }
 #panel label { display: block; font-weight: 600; margin-bottom: 4px; }
@@ -56,5 +78,5 @@ button.primary:hover { background: #9a4500; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 600px) {
-  #panel { top: auto; bottom: 0; left: 0; right: 0; width: 100%; border-radius: 14px 14px 0 0; }
+  #panel { top: auto; bottom: 0; left: 0; right: 0; width: 100%; border-radius: 0; }
 }
