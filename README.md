@@ -15,20 +15,26 @@ PLATEAU の「特定の日時における日陰を閲覧する」と同じ発想
 - **背景地図**: 国土地理院 最適化ベクトルタイル（淡色地図風スタイル, `public/style/pale.json`）
 - **日陰**: PMTiles（`shade.pmtiles`）を MapLibre の vector fill で描画し、`hour` 属性でフィルタ。
   道路の上・地名ラベルの下（`beforeId`）に差し込む
-- **建物 壁面**: PMTiles（`building.pmtiles`）を `fill-extrusion`
+- **建物 壁面**: PMTiles（`building.pmtiles`）を `fill-extrusion`。**塗りは完全透明**（`fill-extrusion-opacity: 0`）で、
+  下の日陰・背景地図を隠さない。透明でも残しているのは ①クリック時の当たり判定（`queryRenderedFeatures` は塗りの
+  不透明度に依存しない）②深度バッファへの書き込み → 建物裏側のワイヤーフレームを隠す、の2つの役割のため
 - **建物 枠線**: deck.gl（`@deck.gl/geo-layers` TileLayer）が同じ `building.pmtiles` を
-  `pmtiles` + `@loaders.gl/mvt` で読み、3D ワイヤーフレーム（extruded/wireframe）を壁面の上に重畳
+  `pmtiles` + `@loaders.gl/mvt` で読み、3D ワイヤーフレーム（extruded/wireframe）で描画。建物の見た目はこれが担う
 - トークン不要・すべて無料タイル
 
 ## 画面
 - 時刻スライダー（5:00〜18:00）で日陰を切替、「▶ 1日を再生」でアニメーション
-- 建物（3D 壁面＋枠線）の表示オン/オフ、現在地（GeolocateControl）
+- 建物（3D 枠線）の表示オン/オフ、現在地（GeolocateControl）
 - パネルは開閉可、太陽高度・方位・影長倍率を表示
+- **建物クリックで属性ポップアップ**：建物ID・用途・構造・階数・高さ・延床面積と、
+  現在時刻におけるその建物の影の長さ（高さ ÷ tan 太陽高度）。
+  用途/構造の数値コードは DB定義書 別表1・別表2 に沿って日本語ラベルへ変換（`src/main.ts` の
+  `RIYOU_LABEL` / `KOUZO_LABEL`）
 
 ## データと配信
 | データ | 内容 | サイズ |
 |---|---|---|
-| `building.pmtiles` | 建物FP＋高さ TAKASA（z13–16, 446,851棟） | 約34MB |
+| `building.pmtiles` | 建物FP＋属性 `TID`/`TAKASA`/`RIYOU`/`KOUZO`/`KAISU`/`NOBEMEN`（z13–16, 446,851棟） | 約47MB |
 | `shade.pmtiles` | 建物ごとの日陰（毎正時14枚, `hour`属性, z12–16, 6,255,914ポリゴン） | 約191MB |
 
 - 出典：さいたま市 建物現況調査（市独自調査／R3都市計画基礎調査、基準日 2021-03-31）

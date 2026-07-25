@@ -35,6 +35,22 @@ const SUN: Record<number, { alt: number; az: number }> = {
   17: { alt: 19.9, az: 278 }, 18: { alt: 8.1, az: 286 },
 }
 
+// 建物属性コード（DB定義書「GISデータ_DB定義書_建物現況調査」別表1・別表2）
+// RIYOU=88（建物としてカウントしない構造物等）はタイル生成時に除外済み
+const RIYOU_LABEL: Record<number, string> = {
+  1: '専用住宅', 2: '共同住宅', 3: '商業・業務併用住宅', 4: '工業併用住宅',
+  5: '商業施設(A)', 6: '商業施設(B)', 7: '商業施設(C)', 8: '商業施設(D)',
+  9: '業務施設', 10: '商業・業務施設', 11: '宿泊施設', 12: '風俗営業施設',
+  13: '娯楽施設', 14: '遊戯施設(A)', 15: '遊戯施設(B)', 16: '官公庁施設',
+  17: '文教厚生施設(A)', 18: '文教厚生施設(B)', 19: '文教厚生施設(C)',
+  20: '医療・福祉施設', 21: '供給処理施設', 22: '工業施設(A)', 23: '工業施設(B)',
+  24: '運輸・倉庫施設(A)', 25: '運輸・倉庫施設(B)', 26: '農林漁業施設', 27: 'その他',
+  88: '建物としてカウントしない構造物等',
+}
+const KOUZO_LABEL: Record<number, string> = {
+  1: '耐火造', 2: '準耐火', 3: '防火造', 4: '準防火造', 5: '木造',
+}
+
 // ---- PMTiles プロトコル ----
 const protocol = new Protocol()
 maplibregl.addProtocol('pmtiles', protocol.tile)
@@ -150,6 +166,58 @@ bldgChk.addEventListener('change', () => {
 
 $<HTMLButtonElement>('locate').addEventListener('click', () => geolocate.trigger())
 
+// ---- 建物クリック → 属性ポップアップ ----
+// 当たり判定は透明な fill-extrusion レイヤー 'bldg-3d'。
+// 表示できる属性はタイルに焼かれたものだけ（build_tiles.sh の tippecanoe -y を参照）。
+const numOf = (v: unknown): number | null =>
+  typeof v === 'number' && Number.isFinite(v) ? v : null
+
+function buildingPopupHTML(p: Record<string, unknown>): string {
+  const tid = numOf(p.TID)
+  const riyou = numOf(p.RIYOU)
+  const kouzo = numOf(p.KOUZO)
+  const kaisu = numOf(p.KAISU)
+  const takasa = numOf(p.TAKASA)
+  const nobemen = numOf(p.NOBEMEN)
+
+  const rows: [string, string][] = []
+  if (riyou !== null) rows.push(['用途', RIYOU_LABEL[riyou] ?? `コード ${riyou}`])
+  if (kouzo !== null) rows.push(['構造', KOUZO_LABEL[kouzo] ?? `コード ${kouzo}`])
+  if (kaisu !== null) rows.push(['階数', `地上 ${kaisu} 階`])
+  if (takasa !== null) rows.push(['高さ', `${takasa} m`])
+  if (nobemen !== null) rows.push(['延床面積', `${nobemen.toLocaleString('ja-JP')} ㎡`])
+
+  // この建物が現在時刻に落とす影の長さ（水平投影長 = 高さ ÷ tan(太陽高度)）
+  const hour = Number(timeEl.value)
+  const s = SUN[hour]
+  if (takasa !== null && s && s.alt > 0.5) {
+    const len = takasa / Math.tan((s.alt * Math.PI) / 180)
+    rows.push([`影の長さ <span class="hint">${String(hour).padStart(2, '0')}:00</span>`,
+      `約 ${len.toFixed(1)} m`])
+  }
+
+  const head = tid !== null ? `建物 <span class="tid">TID ${tid}</span>` : '建物'
+  const body = rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')
+  return `<div class="bpop"><div class="bpop-h">${head}</div><table>${body}</table></div>`
+}
+
+let popup: maplibregl.Popup | null = null
+
+map.on('click', (e) => {
+  if (!map.getLayer('bldg-3d')) return
+  const hit = map.queryRenderedFeatures(e.point, { layers: ['bldg-3d'] })[0]
+  popup?.remove()
+  popup = null
+  if (!hit) return
+  popup = new maplibregl.Popup({ closeButton: true, maxWidth: '270px', className: 'bldg-popup' })
+    .setLngLat(e.lngLat)
+    .setHTML(buildingPopupHTML(hit.properties ?? {}))
+    .addTo(map)
+})
+
+map.on('mouseenter', 'bldg-3d', () => { map.getCanvas().style.cursor = 'pointer' })
+map.on('mouseleave', 'bldg-3d', () => { map.getCanvas().style.cursor = '' })
+
 // ---- パネル開閉 ----
 const panel = $<HTMLDivElement>('panel')
 const panelOpen = $<HTMLButtonElement>('panel-open')
@@ -174,13 +242,17 @@ map.on('load', () => {
       type: 'fill',
       source: 'shade',
       'source-layer': 'shade',
-      paint: { 'fill-color': '#161b24', 'fill-opacity': 0.33 },
+      paint: { 'fill-color': '#0e1219', 'fill-opacity': 0.52 },
       filter: hourFilter(Number(timeEl.value)),
     },
     SHADE_BEFORE,
   )
 
   // 建物 壁面（PMTiles / fill-extrusion）
+  // 壁面は完全透明。見た目は deck.gl のワイヤーフレームが担い、この層は
+  //  (a) クリック時の当たり判定（queryRenderedFeatures は塗り透明でもヒットする）
+  //  (b) 深度バッファへの書き込み → 建物裏側のワイヤーフレームを隠す
+  // の2役で残している。
   map.addSource('bldg', { type: 'vector', url: `pmtiles://${BUILDING_PMTILES}` })
   map.addLayer({
     id: 'bldg-3d',
@@ -192,7 +264,7 @@ map.on('load', () => {
       'fill-extrusion-color': '#f0ece4',
       'fill-extrusion-height': ['get', 'TAKASA'],
       'fill-extrusion-base': 0,
-      'fill-extrusion-opacity': 0.4,
+      'fill-extrusion-opacity': 0,
     },
   })
 

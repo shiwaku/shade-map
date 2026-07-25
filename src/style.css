@@ -60,11 +60,40 @@ button.primary:hover { background: #9a4500; }
 
 .legend { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 6px; }
 .sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
-.sw.shade { background: #161b24; }
-.sw.bldg  { background: #f0ece4; }
+.sw.shade { background: #0e1219; opacity: 0.52; }
+/* 建物は壁面透明＋枠線のみ（deck.gl ワイヤーフレーム） */
+.sw.bldg  { background: transparent; border: 1.5px solid #463c34; }
 .legend .sw:not(:first-child) { margin-left: 10px; }
 
 .foot { font-size: 11px; color: #8a8a8a; margin-top: 10px; line-height: 1.5; }
+
+/* ---- 建物属性ポップアップ ---- */
+.bldg-popup .maplibregl-popup-content {
+  padding: 10px 12px; border-radius: 0;
+  background: rgba(255,255,252,0.97);
+  border: 1px solid rgba(0,0,0,0.12);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.16);
+  font-size: 12px;
+}
+.bldg-popup .maplibregl-popup-close-button {
+  font-size: 15px; color: #999; padding: 2px 6px 0 0;
+}
+.bldg-popup .maplibregl-popup-close-button:hover { color: #333; background: none; }
+.bpop-h {
+  font-weight: 700; font-size: 12px; margin-bottom: 6px; padding-right: 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px;
+}
+.bpop-h .tid { font-weight: 400; color: #999; font-variant-numeric: tabular-nums; }
+.bpop table { border-collapse: collapse; }
+.bpop th {
+  text-align: left; font-weight: 400; color: #777;
+  padding: 2px 10px 2px 0; white-space: nowrap; vertical-align: top;
+}
+.bpop td {
+  padding: 2px 0; font-weight: 600; color: #1a1a1a;
+  font-variant-numeric: tabular-nums;
+}
+.bpop .hint { color: #b25000; font-size: 11px; }
 
 #loading {
   position: absolute; inset: 0; z-index: 50; background: #f5f5f0;

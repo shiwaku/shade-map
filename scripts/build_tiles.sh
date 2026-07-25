@@ -16,11 +16,12 @@ if [ ! -f work/buildings_city.geojson ]; then
     -select TID,RIYOU,KOUZO,KAISU,TAKASA,NOBEMEN
 fi
 
-# 2) 建物 PMTiles（壁面 fill-extrusion 用）
+# 2) 建物 PMTiles（壁面 fill-extrusion ＋ クリック時の属性ポップアップ用）
+#    -y の属性がそのままポップアップの表示項目になる（src/main.ts buildingPopupHTML）
 echo "[2/4] building.pmtiles (tippecanoe)"
 tippecanoe -o public/tiles/building.pmtiles -f -l building \
   -Z13 -z16 --drop-densest-as-needed --extend-zooms-if-still-dropping \
-  -y TAKASA -y RIYOU -y KOUZO \
+  -y TID -y TAKASA -y RIYOU -y KOUZO -y KAISU -y NOBEMEN \
   work/buildings_city.geojson
 
 # 3) 建物ごとの日陰ポリゴン（毎正時・融合なし）を NDJSON 出力
