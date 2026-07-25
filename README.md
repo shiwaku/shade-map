@@ -12,7 +12,7 @@ PLATEAU の「特定の日時における日陰を閲覧する」と同じ発想
 - **ビルド**: Vite + TypeScript（Node.js）
 - **地図**: MapLibre GL JS 4
 - **日陰オーバーレイ**: deck.gl 9（`@deck.gl/mapbox` MapboxOverlay / GeoJsonLayer, interleaved）
-- **建物**: PMTiles ベクトルタイル（`fill-extrusion`, source-layer `building`）
+- **建物**: PMTiles ベクトルタイル（壁面 `fill-extrusion`, source-layer `building`）＋ deck.gl による枠線ワイヤーフレーム（`GeoJsonLayer` extruded/wireframe）
 - **背景地図**: 国土地理院 最適化ベクトルタイル（淡色地図風スタイル, `public/style/pale.json`）
 - トークン不要・すべて無料タイル
 

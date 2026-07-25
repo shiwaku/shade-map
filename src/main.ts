@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl'
 import { Protocol } from 'pmtiles'
 import { MapboxOverlay } from '@deck.gl/mapbox'
 import { GeoJsonLayer, type GeoJsonLayerProps } from '@deck.gl/layers'
-import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
+import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import './style.css'
 
@@ -52,8 +52,13 @@ const playBtn = $<HTMLButtonElement>('play')
 const bldgChk = $<HTMLInputElement>('bldg')
 
 // ---- 状態 ----
+interface BldgProps {
+  TAKASA: number
+}
+
 const shadeByHour = new Map<number, ShadeFeature>()
 let overlay: MapboxOverlay | null = null
+let buildingsFC: FeatureCollection<Polygon | MultiPolygon, BldgProps> | null = null
 
 const shadeFC = (hour: number): FeatureCollection => {
   const f = shadeByHour.get(hour)
@@ -86,7 +91,25 @@ function render(): void {
       beforeId: SHADE_BEFORE,
     } as GeoJsonLayerProps<ShadeProps> & { beforeId: string },
   )
-  overlay?.setProps({ layers: [shadeLayer] })
+
+  // 建物ワイヤーフレーム（枠線のみ。壁面は MapLibre fill-extrusion 側で描画）
+  const layers: GeoJsonLayer[] = [shadeLayer]
+  if (buildingsFC && bldgChk.checked) {
+    layers.push(
+      new GeoJsonLayer<BldgProps>({
+        id: 'bldg-wire',
+        data: buildingsFC,
+        extruded: true,
+        wireframe: true,
+        filled: false,
+        stroked: false,
+        getElevation: (f: Feature<Geometry, BldgProps>) => f.properties.TAKASA ?? 0,
+        getLineColor: [70, 60, 52, 220],
+        lineWidthMinPixels: 1,
+      }),
+    )
+  }
+  overlay?.setProps({ layers })
 }
 
 // ---- イベント ----
@@ -113,16 +136,15 @@ bldgChk.addEventListener('change', () => {
   if (map.getLayer('bldg-3d')) {
     map.setLayoutProperty('bldg-3d', 'visibility', bldgChk.checked ? 'visible' : 'none')
   }
+  render()
 })
 
 $<HTMLButtonElement>('locate').addEventListener('click', () => geolocate.trigger())
 
 // ---- ロード ----
 map.on('load', async () => {
-  overlay = new MapboxOverlay({ interleaved: true, layers: [] })
-  map.addControl(overlay)
-
-  // 建物 (PMTiles / fill-extrusion)
+  // 建物 壁面 (PMTiles / fill-extrusion) — deck オーバーレイより先に追加し、
+  // ワイヤーフレーム(deck)が壁面の上に重なるようにする
   map.addSource('bldg', { type: 'vector', url: `pmtiles://${asset('tiles/building.pmtiles')}` })
   map.addLayer({
     id: 'bldg-3d',
@@ -137,6 +159,14 @@ map.on('load', async () => {
       'fill-extrusion-opacity': 0.35,
     },
   })
+
+  // deck.gl オーバーレイ（日陰＋建物ワイヤーフレーム）
+  overlay = new MapboxOverlay({ interleaved: true, layers: [] })
+  map.addControl(overlay)
+
+  // 建物ジオメトリ（ワイヤーフレーム用）
+  buildingsFC = (await (await fetch(asset('data/buildings.geojson'))).json()) as
+    FeatureCollection<Polygon | MultiPolygon, BldgProps>
 
   // 日陰データ
   const shade = (await (await fetch(asset('data/shade_by_hour.geojson'))).json()) as
