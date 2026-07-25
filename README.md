@@ -19,7 +19,14 @@ PLATEAU の「特定の日時における日陰を閲覧する」と同じ発想
   下の日陰・背景地図を隠さない。透明でも残しているのは ①クリック時の当たり判定（`queryRenderedFeatures` は塗りの
   不透明度に依存しない）②深度バッファへの書き込み → 建物裏側のワイヤーフレームを隠す、の2つの役割のため
 - **建物 枠線**: deck.gl（`@deck.gl/geo-layers` TileLayer）が同じ `building.pmtiles` を
-  `pmtiles` + `@loaders.gl/mvt` で読み、3D ワイヤーフレーム（extruded/wireframe）で描画。建物の見た目はこれが担う
+  `pmtiles` + `@loaders.gl/mvt` で読み、建物の見た目を担う。1タイルにつき2つの `GeoJsonLayer` を重ねる：
+  1. **立体の骨格**（`extruded: true, wireframe: true`）— 垂直エッジと接地エッジ。
+     ただし `SolidPolygonLayer` の wireframe は `topology: 'line-strip'`（GPUライン）なので**線幅は1px固定**で、
+     `lineWidthMinPixels` は効かない。また `PolygonLayer` は `!extruded && stroked` のときしか stroke を描かない
+  2. **屋上の輪郭線**（`extruded: false, stroked: true`）— フットプリントを屋上高さ（`TAKASA`）へ持ち上げた
+     リングを PathLayer で描く。こちらは実ジオメトリなので**太さを指定できる**。
+     太さは `src/main.ts` の `ROOF_LINE_WIDTH_PX`（既定 2px）で調整。屋上面とのZファイト回避に
+     `ROOF_LIFT_M`（0.3m）だけ持ち上げている
 - トークン不要・すべて無料タイル
 
 ## 画面

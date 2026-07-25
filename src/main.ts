@@ -87,6 +87,34 @@ const hourFilter = (hour: number): FilterSpecification => ['==', ['get', 'hour']
 const buildingPM = new PMTiles(BUILDING_PMTILES)
 let overlay: MapboxOverlay | null = null
 
+const WIRE_COLOR: [number, number, number, number] = [70, 60, 52, 220]
+// 屋上輪郭線の太さ(px)。ここを変えると線の太さが変わる。
+// SolidPolygonLayer の wireframe は topology:'line-strip'（GPU ライン）で
+// 幅を指定できず 1px 固定なので、太い線は下の PathLayer(GeoJsonLayer の stroke)が担う。
+const ROOF_LINE_WIDTH_PX = 2
+// 屋上面と完全に同一平面だと Z ファイトするため、わずかに持ち上げる(m)
+const ROOF_LIFT_M = 0.3
+
+// 座標に z を付与（Polygon / MultiPolygon の入れ子に再帰対応）
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function liftCoords(coords: any, z: number): any {
+  return typeof coords[0] === 'number'
+    ? [coords[0], coords[1], z]
+    : coords.map((c: unknown) => liftCoords(c, z))
+}
+
+/** 建物フットプリントを屋上高さへ持ち上げたリングを作る（輪郭線用） */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function roofRings(data: any[]): any[] {
+  const out = []
+  for (const f of data) {
+    if (!f?.geometry?.coordinates) continue
+    const z = (f.properties?.TAKASA ?? 0) + ROOF_LIFT_M
+    out.push({ ...f, geometry: { ...f.geometry, coordinates: liftCoords(f.geometry.coordinates, z) } })
+  }
+  return out
+}
+
 function wireframeLayer(): TileLayer {
   return new TileLayer({
     id: 'bldg-wire',
@@ -105,18 +133,34 @@ function wireframeLayer(): TileLayer {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = props.data as any[] | null
       if (!data || data.length === 0) return null
-      return new GeoJsonLayer({
-        id: `${props.id}-geo`,
-        data,
-        extruded: true,
-        wireframe: true,
-        filled: false,
-        stroked: false,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getElevation: (f: any) => f.properties?.TAKASA ?? 0,
-        getLineColor: [70, 60, 52, 220],
-        lineWidthMinPixels: 1,
-      })
+      return [
+        // 立体の骨格（垂直エッジ＋屋上/接地エッジ）。幅は 1px 固定。
+        new GeoJsonLayer({
+          id: `${props.id}-geo`,
+          data,
+          extruded: true,
+          wireframe: true,
+          filled: false,
+          stroked: false,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          getElevation: (f: any) => f.properties?.TAKASA ?? 0,
+          getLineColor: WIRE_COLOR,
+        }),
+        // 屋上の輪郭線。こちらは実ジオメトリなので太さを指定できる
+        new GeoJsonLayer({
+          id: `${props.id}-roof`,
+          data: roofRings(data),
+          extruded: false,
+          filled: false,
+          stroked: true,
+          getLineColor: WIRE_COLOR,
+          getLineWidth: ROOF_LINE_WIDTH_PX,
+          lineWidthUnits: 'pixels',
+          lineWidthMinPixels: ROOF_LINE_WIDTH_PX,
+          lineJointRounded: true,
+          lineCapRounded: true,
+        }),
+      ]
     },
   })
 }
