@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>さいたま市 日陰マップ（大宮駅周辺）</title>
+</head>
+<body>
+  <div id="loading"><div class="spinner"></div><p>地図を読み込んでいます…</p></div>
+  <div id="map"></div>
+
+  <div id="panel">
+    <h1>☀️ 日陰マップ</h1>
+    <div class="sub">大宮駅周辺／基準日 <span id="thedate">—</span></div>
+
+    <div class="row">
+      <label for="time">時刻：<span id="timeval">12:00</span></label>
+      <input type="range" id="time" min="5" max="18" step="1" value="12" />
+    </div>
+
+    <div class="row btns">
+      <button class="primary" id="play">▶ 1日を再生</button>
+      <button id="locate">現在地</button>
+    </div>
+
+    <div class="row sun" id="suninfo"></div>
+
+    <label class="row chk"><input type="checkbox" id="bldg" checked /> 建物(3D)を表示</label>
+
+    <div class="legend">
+      <span class="sw shade"></span>日陰
+      <span class="sw bldg"></span>建物
+    </div>
+    <div class="foot">
+      建物現況調査（さいたま市・R3, 基準日 2021/3/31）／背景: 国土地理院 最適化ベクトルタイル（淡色）<br>
+      日陰＝建物フットプリント×高さ TAKASA の幾何投影を1時間帯ごとに事前計算・結合。平地想定・地形/樹木/庇は未考慮。
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build (docs/ は GitHub Pages 公開用にコミットする場合は除外しない)
+# docs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 原データ（大容量シェープファイルは配布物に含めない）
+*.shp
+*.dbf
+*.shx
+*.sbn
+*.sbx
+*.prj

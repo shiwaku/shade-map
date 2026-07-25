@@ -1,0 +1,60 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Segoe UI", sans-serif;
+  background: #f5f5f0; color: #1a1a1a;
+}
+#map { position: absolute; inset: 0; width: 100vw; height: 100dvh; }
+
+#panel {
+  position: absolute; top: 14px; left: 14px; z-index: 20;
+  background: rgba(255,255,252,0.94);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 10px; padding: 14px 16px; width: 310px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.14);
+  font-size: 13px;
+}
+#panel h1 { font-size: 15px; margin-bottom: 2px; }
+#panel .sub { font-size: 12px; color: #666; margin-bottom: 10px; }
+#panel .row { margin: 10px 0; }
+#panel label { display: block; font-weight: 600; margin-bottom: 4px; }
+#timeval { font-variant-numeric: tabular-nums; font-weight: 700; color: #b25000; font-size: 15px; }
+input[type=range] { width: 100%; accent-color: #b25000; }
+
+.btns { display: flex; gap: 8px; }
+button {
+  cursor: pointer; border: 1px solid #c9c6bd; background: #fff;
+  border-radius: 6px; padding: 6px 12px; font-size: 13px; color: #333;
+}
+button:hover { background: #f2f0ea; }
+button.primary { background: #b25000; color: #fff; border-color: #b25000; }
+button.primary:hover { background: #9a4500; }
+
+.sun { font-size: 12px; color: #444; line-height: 1.6; }
+.sun b { color: #b25000; }
+
+.chk { display: flex; align-items: center; gap: 6px; font-weight: normal !important; cursor: pointer; }
+
+.legend { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 6px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid rgba(0,0,0,0.15); }
+.sw.shade { background: #28364f; }
+.sw.bldg  { background: #f0ece4; }
+.legend .sw:not(:first-child) { margin-left: 10px; }
+
+.foot { font-size: 11px; color: #8a8a8a; margin-top: 10px; line-height: 1.5; }
+
+#loading {
+  position: absolute; inset: 0; z-index: 50; background: #f5f5f0;
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+}
+#loading p { font-size: 0.9rem; color: #888; }
+.spinner {
+  width: 36px; height: 36px; border: 3px solid rgba(0,0,0,0.1);
+  border-top-color: #b25000; border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) {
+  #panel { top: auto; bottom: 0; left: 0; right: 0; width: 100%; border-radius: 14px 14px 0 0; }
+}
