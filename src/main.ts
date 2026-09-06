@@ -21,7 +21,7 @@ const isLocal =
   ['localhost', '127.0.0.1'].includes(location.hostname) ||
   location.hostname.startsWith('172.') ||
   location.hostname.startsWith('192.168.')
-const REMOTE_TILES = 'https://shiworks2.xsrv.jp/toshikeikaku/city-saitama/'
+const REMOTE_TILES = 'https://shi-works.com/toshikeikaku/city-saitama/'
 const TILES = isLocal ? asset('tiles/') : REMOTE_TILES
 const BUILDING_PMTILES = `${TILES}building.pmtiles`
 const SHADE_PMTILES = `${TILES}shade.pmtiles`
